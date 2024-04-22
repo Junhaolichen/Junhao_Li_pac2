@@ -1,46 +1,43 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const width = 600;
-    const height = 600;
-    const data = {
-        name: "root",
-        children: [
-            { name: "child1", value: 100 },
-            { name: "child2", value: 50, children: [
-                { name: "grandchild1", value: 30 },
-                { name: "grandchild2", value: 20 }
-            ]},
-            { name: "child3", value: 75 }
-        ]
-    };
+    // Cargar los datos
+    d3.json('path/to/your/data.json').then(function(data) {
+        const width = 600, height = 600;
 
-    const svg = d3.select("body").append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .style("font", "10px sans-serif")
-        .attr("text-anchor", "middle");
+        // Configurar el layout de circle packing
+        const pack = d3.pack()
+            .size([width - 2, height - 2])
+            .padding(3);
 
-    const root = d3.hierarchy(data)
-        .sum(d => d.value)
-        .sort((a, b) => b.value - a.value);
+        // Seleccionar el elemento SVG o crear uno nuevo
+        const svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .style("background", "#eee")
+            .attr("font-size", "10px")
+            .attr("font-family", "sans-serif")
+            .attr("text-anchor", "middle");
 
-    const pack = d3.pack()
-        .size([width, height])
-        .padding(3);
+        // Procesar los datos
+        const root = d3.hierarchy({children: data})
+            .sum(d => d.value); // Asegúrate de que los datos tienen un campo 'value'
 
-    const nodes = pack(root).descendants();
+        // Crear nodos
+        const nodes = pack(root).descendants();
 
-    const circle = svg.selectAll("circle")
-        .data(nodes)
-        .join("circle")
-        .attr("cx", d => d.x)
-        .attr("cy", d => d.y)
-        .attr("r", d => d.r)
-        .style("fill", d => d.children ? "#555" : "#999");
+        const circle = svg.selectAll("circle")
+            .data(nodes)
+            .join("circle")
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("r", d => d.r)
+            .style("fill", d => d.children ? "#555" : "#999");
 
-    const label = svg.selectAll("text")
-        .data(nodes)
-        .join("text")
-        .attr("x", d => d.x)
-        .attr("y", d => d.y)
-        .text(d => d.data.name);
+        // Añadir etiquetas
+        const label = svg.selectAll("text")
+            .data(nodes)
+            .join("text")
+            .attr("x", d => d.x)
+            .attr("y", d => d.y)
+            .text(d => d.data.name);
+    });
 });
